@@ -5,11 +5,11 @@ const RING_CIRCUMFERENCE = 326.73;
 const TRACK_FADE_MS = 650;
 const TRACK_TRANSITION_SECONDS = 0.85;
 const DEFAULT_MUSIC_TRACKS = [
-  "./sounds/rain.mp3",
-  "./sounds/cafe.mp3",
-  "./sounds/lofi.mp3",
-  "./sounds/white-noise.mp3",
-  "./sounds/focus.mp3",
+  "./sounds/1.mp3",
+  "./sounds/2.mp3",
+  "./sounds/3.mp3",
+  "./sounds/4.mp3",
+  "./sounds/5.mp3",
 ];
 const STORAGE_KEYS = {
   volume: "city-flight-pomodoro-volume",
@@ -75,6 +75,7 @@ const appState = {
   currentTrackIndex: 0,
   isTrackTransitioning: false,
   musicTracks: [...DEFAULT_MUSIC_TRACKS],
+  consecutiveTrackErrors: 0,
   volume: 0.6,
   isMusicEnabled: false,
   theme: "dark",
@@ -106,7 +107,7 @@ let fadeIntervalId = null;
 
 /** Renders mute button icon state. */
 function updateMuteButton() {
-  muteToggleBtn.textContent = appState.isMusicEnabled ? "♫ On" : "♫ Off";
+  muteToggleBtn.textContent = appState.isMusicEnabled ? "🔊" : "🔇";
   muteToggleBtn.setAttribute(
     "aria-label",
     appState.isMusicEnabled ? "Turn music off" : "Turn music on",
@@ -139,56 +140,6 @@ function savePreferences() {
     String(appState.isMusicEnabled),
   );
   localStorage.setItem(STORAGE_KEYS.theme, appState.theme);
-}
-
-/** Returns normalized MP3 track path from a directory link. */
-function normalizeTrackPath(trackHref) {
-  if (!trackHref || !/\.mp3(\?|#|$)/i.test(trackHref)) {
-    return "";
-  }
-
-  if (trackHref.startsWith("http://") || trackHref.startsWith("https://")) {
-    return trackHref;
-  }
-  if (trackHref.startsWith("/") || trackHref.startsWith("./")) {
-    return trackHref;
-  }
-
-  const normalizedName = decodeURIComponent(trackHref).replace(
-    /^\.?\/*sounds\//i,
-    "",
-  );
-  return `./sounds/${normalizedName}`;
-}
-
-/** Attempts to discover all MP3 tracks from /sounds directory listing. */
-async function discoverMusicTracks() {
-  try {
-    const response = await fetch("./sounds/", { cache: "no-store" });
-    if (!response.ok) {
-      appState.musicTracks = [...DEFAULT_MUSIC_TRACKS];
-      return;
-    }
-
-    const html = await response.text();
-    const trackSet = new Set();
-    const hrefRegex = /href=["']([^"']+\.mp3(?:\?[^"']*)?)["']/gi;
-    let match = hrefRegex.exec(html);
-
-    while (match) {
-      const trackPath = normalizeTrackPath(match[1]);
-      if (trackPath) {
-        trackSet.add(trackPath);
-      }
-      match = hrefRegex.exec(html);
-    }
-
-    appState.musicTracks = trackSet.size
-      ? Array.from(trackSet)
-      : [...DEFAULT_MUSIC_TRACKS];
-  } catch (_error) {
-    appState.musicTracks = [...DEFAULT_MUSIC_TRACKS];
-  }
 }
 
 /** Returns a normalized key for city duration lookup. */
@@ -338,6 +289,7 @@ async function playCurrentTrack(shouldFadeIn = true) {
 
   try {
     await ambientAudio.play();
+    appState.consecutiveTrackErrors = 0;
     if (shouldFadeIn) {
       fadeAudioVolume(0, appState.volume, TRACK_FADE_MS);
     }
@@ -357,9 +309,29 @@ async function startMusicPlayback() {
 /** Immediately stops music playback and resets current track position. */
 function stopMusicPlayback() {
   appState.isTrackTransitioning = false;
+  appState.consecutiveTrackErrors = 0;
   stopFadeInterval();
   ambientAudio.pause();
   ambientAudio.currentTime = 0;
+}
+
+/** Handles missing/failed tracks and prevents infinite retry loops. */
+async function handleTrackLoadFailure() {
+  if (!appState.isMusicEnabled || !appState.musicTracks.length) {
+    return;
+  }
+
+  appState.consecutiveTrackErrors += 1;
+  if (appState.consecutiveTrackErrors >= appState.musicTracks.length) {
+    appState.isMusicEnabled = false;
+    updateMuteButton();
+    savePreferences();
+    stopMusicPlayback();
+    return;
+  }
+
+  moveToNextTrack();
+  await playCurrentTrack(false);
 }
 
 /** Handles transition to the next track in the playlist. */
@@ -405,8 +377,7 @@ function bindAudioEvents() {
     if (!appState.isMusicEnabled) {
       return;
     }
-    moveToNextTrack();
-    playCurrentTrack(false);
+    handleTrackLoadFailure();
   });
 }
 
@@ -684,9 +655,7 @@ async function handleMuteToggle() {
   updateMuteButton();
   savePreferences();
   if (appState.isMusicEnabled) {
-    if (!appState.musicTracks.length) {
-      await discoverMusicTracks();
-    }
+    appState.currentTrackIndex = 0;
     await startMusicPlayback();
     return;
   }
@@ -727,11 +696,9 @@ function initApp() {
   hydrateControls();
   bindEvents();
   generateRoute();
-  discoverMusicTracks().then(() => {
-    if (appState.isMusicEnabled) {
-      startMusicPlayback();
-    }
-  });
+  if (appState.isMusicEnabled) {
+    startMusicPlayback();
+  }
 }
 
 initApp();
