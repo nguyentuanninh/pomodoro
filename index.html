@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>City Flight Pomodoro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body class="theme-dark">
+  <div class="app-background" id="appBackground"></div>
+  <div class="app-overlay"></div>
+
+  <main class="app" aria-live="polite">
+    <header class="top-bar">
+      <p class="brand">Lauren's Journey to Europe</p>
+      <div class="top-icons">
+        <button id="newCitiesBtn" class="icon-btn" type="button" aria-label="Generate new cities"
+          title="Generate new cities">
+          ✈
+        </button>
+        <button id="themeToggleBtn" class="icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
+          <span id="themeToggleLabel">☀</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="center-stage">
+      <p id="routeDisplay" class="route-line">Paris → Rome</p>
+      <div class="meta-row">
+        <p id="flightTimeDisplay" class="meta-pill">✈ 0m</p>
+        <p id="sessionDisplay" class="meta-pill">1/1</p>
+      </div>
+
+      <div class="timer-wrap">
+        <div class="timer-ring" role="img" aria-label="Current session progress">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+            <circle id="ringProgress" class="ring-progress" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="timer-text">
+            <p id="modeDisplay" class="mode">⏱</p>
+            <p id="timerDisplay" class="timer-value">00:00</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="startBtn" class="primary-btn icon-btn" type="button" aria-label="Start" title="Start">▶</button>
+        <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pause" title="Pause">❚❚</button>
+        <button id="resetBtn" class="icon-btn" type="button" aria-label="Reset" title="Reset">↺</button>
+        <button id="skipBtn" class="icon-btn" type="button" aria-label="Skip current session"
+          title="Skip current session">⏭</button>
+      </div>
+    </section>
+
+    <section class="bottom-dock">
+      <div class="sound-strip">
+        <button id="muteToggleBtn" class="icon-btn music-toggle" type="button" aria-label="Turn music on"
+          title="Turn music on">
+          ♫ Off
+        </button>
+
+        <label class="icon-control" aria-label="Volume">
+          <span aria-hidden="true">◉</span>
+          <input id="volumeRange" type="range" min="0" max="100" value="60" />
+        </label>
+      </div>
+
+      <div class="progress-track">
+        <div id="totalProgressBar" class="progress-fill"></div>
+      </div>
+      <p id="progressPercent" class="progress-text">0%</p>
+    </section>
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+
+</html>
