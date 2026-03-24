@@ -62,10 +62,12 @@
 
     <section class="bottom-dock">
       <div class="sound-strip">
-        <button id="muteToggleBtn" class="icon-btn music-toggle" type="button" aria-label="Turn music on"
-          title="Turn music on">
-          ♫ Off
-        </button>
+        <div class="music-panel">
+          <button id="muteToggleBtn" class="icon-btn music-toggle" type="button" aria-label="Turn music on"
+            title="Turn music on">
+            ♫ Off
+          </button>
+        </div>
 
         <label class="icon-control" aria-label="Volume">
           <span aria-hidden="true">◉</span>
@@ -79,7 +81,17 @@
       <p id="progressPercent" class="progress-text">0%</p>
     </section>
   </main>
+  <div class="footer-dog-track" aria-hidden="true">
+    <div id="footerAnimationDoggie" class="footer-json-sprite footer-json-sprite-1"></div>
+    <div id="footerAnimationGiraffe" class="footer-json-sprite footer-json-sprite-2"></div>
+    <div id="footerAnimationPuppy" class="footer-json-sprite footer-json-sprite-3"></div>
+    <div id="footerAnimationCrab" class="footer-json-sprite footer-json-sprite-4"></div>
+    <div id="footerAnimationJellyfish" class="footer-json-sprite footer-json-sprite-5"></div>
+    <div id="footerAnimationJumpingPig" class="footer-json-sprite footer-json-sprite-6"></div>
+    <img id="musicSprite" class="music-sprite" src="./animation/1.png" alt="Music animation" />
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <script src="./script.js"></script>
 </body>
 

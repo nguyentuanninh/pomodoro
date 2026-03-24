@@ -4,6 +4,30 @@ const TEN_MINUTES_SECONDS = 600;
 const RING_CIRCUMFERENCE = 326.73;
 const TRACK_FADE_MS = 650;
 const TRACK_TRANSITION_SECONDS = 0.85;
+const SPRITE_FRAME_COUNT = 6;
+const SPRITE_FRAME_INTERVAL_MS = 340;
+const FOOTER_JSON_ANIMATIONS = [
+  {
+    containerId: "footerAnimationDoggie",
+    path: "./animation/json/Cute Doggie.json",
+  },
+  {
+    containerId: "footerAnimationGiraffe",
+    path: "./animation/json/Meditating Giraffe.json",
+  },
+  {
+    containerId: "footerAnimationPuppy",
+    path: "./animation/json/Puppy sleeping.json",
+  },
+  {
+    containerId: "footerAnimationCrab",
+    path: "./animation/json/crab walk.json",
+  },
+  {
+    containerId: "footerAnimationJellyfish",
+    path: "./animation/json/Jellyfish.json",
+  },
+];
 const DEFAULT_MUSIC_TRACKS = [
   "./sounds/1.mp3",
   "./sounds/2.mp3",
@@ -93,6 +117,7 @@ const ringProgress = document.getElementById("ringProgress");
 const appBackground = document.getElementById("appBackground");
 const volumeRange = document.getElementById("volumeRange");
 const muteToggleBtn = document.getElementById("muteToggleBtn");
+const musicSprite = document.getElementById("musicSprite");
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 const themeToggleLabel = document.getElementById("themeToggleLabel");
 const startBtn = document.getElementById("startBtn");
@@ -104,6 +129,66 @@ const newCitiesBtn = document.getElementById("newCitiesBtn");
 const ambientAudio = new Audio();
 ambientAudio.preload = "auto";
 let fadeIntervalId = null;
+let spriteAnimationIntervalId = null;
+const footerLottieInstances = [];
+
+/** Returns sprite frame path based on frame index. */
+function getSpriteFramePath(frameIndex) {
+  return `./animation/${frameIndex + 1}.png`;
+}
+
+/** Renders active sprite frame into the music animation image. */
+function renderSpriteFrame(frameIndex) {
+  if (!musicSprite) {
+    return;
+  }
+  musicSprite.src = getSpriteFramePath(frameIndex);
+}
+
+/** Starts looping sprite animation from frame 1 to frame 6. */
+function startSpriteAnimation() {
+  if (!musicSprite || spriteAnimationIntervalId) {
+    return;
+  }
+
+  let frameIndex = 0;
+  renderSpriteFrame(frameIndex);
+  spriteAnimationIntervalId = setInterval(() => {
+    frameIndex = (frameIndex + 1) % SPRITE_FRAME_COUNT;
+    renderSpriteFrame(frameIndex);
+  }, SPRITE_FRAME_INTERVAL_MS);
+}
+
+/** Loads and starts all footer Lottie JSON animations. */
+function startFooterLottieAnimations() {
+  if (!window.lottie) {
+    return;
+  }
+
+  if (footerLottieInstances.length) {
+    return;
+  }
+
+  FOOTER_JSON_ANIMATIONS.forEach(animationConfig => {
+    const container = document.getElementById(animationConfig.containerId);
+    if (!container) {
+      return;
+    }
+
+    const animation = window.lottie.loadAnimation({
+      container,
+      renderer: "svg",
+      loop: true,
+      autoplay: true,
+      path: animationConfig.path,
+      rendererSettings: {
+        preserveAspectRatio: "xMidYMid meet",
+      },
+    });
+
+    footerLottieInstances.push(animation);
+  });
+}
 
 /** Renders mute button icon state. */
 function updateMuteButton() {
@@ -694,6 +779,8 @@ function initApp() {
   loadPreferences();
   bindAudioEvents();
   hydrateControls();
+  startSpriteAnimation();
+  startFooterLottieAnimations();
   bindEvents();
   generateRoute();
   if (appState.isMusicEnabled) {

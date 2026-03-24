@@ -103,7 +103,7 @@ body.theme-light .app-overlay {
 
 .route-line {
   margin: 0;
-  font-size: clamp(1.05rem, 1.7vw + 0.65rem, 1.5rem);
+  font-size: clamp(1.8rem, 3vw + 1.2rem, 3rem);
   font-weight: 600;
   letter-spacing: 0.02em;
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
@@ -124,7 +124,7 @@ body.theme-light .app-overlay {
   background: var(--glass);
   color: var(--text-dim);
   backdrop-filter: blur(6px);
-  font-size: 0.82rem;
+  font-size: 1rem;
 }
 
 .timer-wrap {
@@ -239,6 +239,101 @@ input[type="range"] {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 8px;
+  align-items: end;
+}
+
+.music-panel {
+  width: 96px;
+}
+
+.footer-dog-track {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 5;
+}
+
+.music-sprite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+  animation: dog-walk-right 60s linear infinite;
+}
+
+.footer-json-sprite {
+  --sprite-size: 74px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--sprite-size);
+  height: var(--sprite-size);
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+  animation-name: dog-walk-right;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.footer-json-sprite svg,
+.footer-json-sprite canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Edit --sprite-size in each item below to resize individual animations. */
+.footer-json-sprite-1 {
+  --sprite-size: 84px;
+  animation-duration: 66s;
+  animation-delay: -9s;
+  bottom: -15px;
+  animation-direction: reverse;
+}
+
+.footer-json-sprite-2 {
+  --sprite-size: 86px;
+  animation-duration: 70s;
+  animation-delay: -22s;
+  bottom: 10px;
+}
+
+.footer-json-sprite-3 {
+  --sprite-size: 82px;
+  /* animation-duration: 100s;
+  animation-delay: -35s; */
+  bottom: -15px;
+  animation-direction: reverse;
+}
+
+.footer-json-sprite-4 {
+  --sprite-size: 80px;
+  animation-duration: 52s;
+  animation-delay: -14s;
+  bottom: -10px;
+  animation-direction: reverse;
+}
+
+.footer-json-sprite-5 {
+  --sprite-size: 88px;
+  animation-duration: 78s;
+  animation-delay: -41s;
+  bottom: 12px;
+}
+
+.footer-json-sprite-6 {
+  --sprite-size: 106px;
+  animation-duration: 48s;
+  animation-delay: -27s;
+  bottom: -10px;
 }
 
 .icon-control {
@@ -302,5 +397,14 @@ input[type="range"] {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes dog-walk-right {
+  0% {
+    transform: translateX(-64px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 64px));
   }
 }
