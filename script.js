@@ -1,5 +1,5 @@
 const MAX_SESSION_MINUTES = 45;
-const SHORT_BREAK_MINUTES = 5;
+const SHORT_BREAK_MINUTES = 0.1;
 const TEN_MINUTES_SECONDS = 600;
 const RING_CIRCUMFERENCE = 326.73;
 const TRACK_FADE_MS = 650;
@@ -38,6 +38,7 @@ const DEFAULT_MUSIC_TRACKS = [
 const STORAGE_KEYS = {
   volume: "city-flight-pomodoro-volume",
   musicEnabled: "city-flight-pomodoro-music-enabled",
+  notificationEnabled: "city-flight-pomodoro-notification-enabled",
   theme: "city-flight-pomodoro-theme",
 };
 
@@ -102,6 +103,7 @@ const appState = {
   consecutiveTrackErrors: 0,
   volume: 0.6,
   isMusicEnabled: false,
+  isNotificationEnabled: true,
   theme: "dark",
   currentFocusTenMinuteMark: TEN_MINUTES_SECONDS,
 };
@@ -117,20 +119,126 @@ const ringProgress = document.getElementById("ringProgress");
 const appBackground = document.getElementById("appBackground");
 const volumeRange = document.getElementById("volumeRange");
 const muteToggleBtn = document.getElementById("muteToggleBtn");
+const fullscreenToggleBtn = document.getElementById("fullscreenToggleBtn");
 const musicSprite = document.getElementById("musicSprite");
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 const themeToggleLabel = document.getElementById("themeToggleLabel");
-const startBtn = document.getElementById("startBtn");
-const pauseBtn = document.getElementById("pauseBtn");
+const startPauseBtn = document.getElementById("startPauseBtn");
 const resetBtn = document.getElementById("resetBtn");
 const skipBtn = document.getElementById("skipBtn");
 const newCitiesBtn = document.getElementById("newCitiesBtn");
 
 const ambientAudio = new Audio();
 ambientAudio.preload = "auto";
+const BASE_PAGE_TITLE = document.title || "City Flight Pomodoro";
 let fadeIntervalId = null;
 let spriteAnimationIntervalId = null;
 const footerLottieInstances = [];
+let notificationAudioContext = null;
+let isFullscreenFallbackActive = false;
+
+/** Returns true when the browser reports real fullscreen is active. */
+function isRealFullscreenActive() {
+  return Boolean(
+    document.fullscreenElement || document.webkitFullscreenElement,
+  );
+}
+
+/** Enables/disables CSS fallback fullscreen mode. */
+function setFullscreenFallbackActive(active) {
+  isFullscreenFallbackActive = active;
+  document.body.classList.toggle("fullscreen-fallback", active);
+}
+
+/** Syncs fullscreen UI state based on current fullscreen status. */
+function syncFullscreenUI() {
+  if (!fullscreenToggleBtn) {
+    return;
+  }
+
+  const realActive = isRealFullscreenActive();
+  if (realActive && isFullscreenFallbackActive) {
+    // If real fullscreen succeeds after a fallback attempt, remove fallback UI.
+    setFullscreenFallbackActive(false);
+  }
+
+  document.body.classList.toggle("fullscreen-real", realActive);
+
+  const isActive = realActive || isFullscreenFallbackActive;
+  fullscreenToggleBtn.textContent = isActive ? "⤢" : "⛶";
+  fullscreenToggleBtn.setAttribute(
+    "aria-label",
+    isActive ? "Exit fullscreen" : "Enter fullscreen",
+  );
+  fullscreenToggleBtn.setAttribute(
+    "title",
+    isActive ? "Exit fullscreen" : "Enter fullscreen",
+  );
+}
+
+/** Attempts to enter real fullscreen mode. Returns whether it succeeded. */
+async function requestRealFullscreen() {
+  const element = document.documentElement;
+  const request = element.requestFullscreen || element.webkitRequestFullscreen;
+  if (!request) {
+    return false;
+  }
+
+  try {
+    const maybePromise = request.call(element);
+    if (maybePromise && typeof maybePromise.then === "function") {
+      await maybePromise;
+    }
+
+    // Some browsers don't resolve accurately; re-check after a short delay.
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return isRealFullscreenActive();
+  } catch (error) {
+    return false;
+  }
+}
+
+/** Exits real fullscreen mode if active. */
+async function exitRealFullscreen() {
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if (!exit) {
+    return;
+  }
+
+  try {
+    const maybePromise = exit.call(document);
+    if (maybePromise && typeof maybePromise.then === "function") {
+      await maybePromise;
+    }
+  } catch (error) {
+    // Ignore exit errors; fullscreenchange will sync state.
+  }
+}
+
+/** Toggles fullscreen mode (real fullscreen first, otherwise CSS fallback). */
+async function handleFullscreenToggle() {
+  if (!fullscreenToggleBtn) {
+    return;
+  }
+
+  if (isRealFullscreenActive()) {
+    await exitRealFullscreen();
+    syncFullscreenUI();
+    return;
+  }
+
+  if (isFullscreenFallbackActive) {
+    setFullscreenFallbackActive(false);
+    syncFullscreenUI();
+    return;
+  }
+
+  const entered = await requestRealFullscreen();
+  if (!entered) {
+    setFullscreenFallbackActive(true);
+  }
+  syncFullscreenUI();
+}
 
 /** Returns sprite frame path based on frame index. */
 function getSpriteFramePath(frameIndex) {
@@ -203,6 +311,9 @@ function updateMuteButton() {
 function loadPreferences() {
   const savedVolume = localStorage.getItem(STORAGE_KEYS.volume);
   const savedMusicEnabled = localStorage.getItem(STORAGE_KEYS.musicEnabled);
+  const savedNotificationEnabled = localStorage.getItem(
+    STORAGE_KEYS.notificationEnabled,
+  );
   const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
 
   if (savedVolume && !Number.isNaN(Number(savedVolume))) {
@@ -211,6 +322,9 @@ function loadPreferences() {
   }
   if (savedMusicEnabled) {
     appState.isMusicEnabled = savedMusicEnabled === "true";
+  }
+  if (savedNotificationEnabled) {
+    appState.isNotificationEnabled = savedNotificationEnabled === "true";
   }
   if (savedTheme === "light" || savedTheme === "dark") {
     appState.theme = savedTheme;
@@ -223,6 +337,10 @@ function savePreferences() {
   localStorage.setItem(
     STORAGE_KEYS.musicEnabled,
     String(appState.isMusicEnabled),
+  );
+  localStorage.setItem(
+    STORAGE_KEYS.notificationEnabled,
+    String(appState.isNotificationEnabled),
   );
   localStorage.setItem(STORAGE_KEYS.theme, appState.theme);
 }
@@ -330,6 +448,33 @@ function stopFadeInterval() {
   }
   clearInterval(fadeIntervalId);
   fadeIntervalId = null;
+}
+
+/** Returns the singleton notification audio context. */
+function getNotificationAudioContext() {
+  if (notificationAudioContext) {
+    return notificationAudioContext;
+  }
+  const AudioContextConstructor =
+    window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextConstructor) {
+    return null;
+  }
+  notificationAudioContext = new AudioContextConstructor();
+  return notificationAudioContext;
+}
+
+/** Resumes notification audio context after a user gesture when needed. */
+async function resumeNotificationContextIfNeeded() {
+  const context = getNotificationAudioContext();
+  if (!context || context.state !== "suspended") {
+    return;
+  }
+  try {
+    await context.resume();
+  } catch (_error) {
+    // Ignore resume failures; browser gesture policy will guard playback.
+  }
 }
 
 /** Fades audio volume between values over a duration. */
@@ -468,7 +613,13 @@ function bindAudioEvents() {
 
 /** Plays a short generated tone for periodic or completion alerts. */
 function playTone(type) {
-  const context = new (window.AudioContext || window.webkitAudioContext)();
+  if (!appState.isNotificationEnabled) {
+    return;
+  }
+  const context = getNotificationAudioContext();
+  if (!context || context.state !== "running") {
+    return;
+  }
   const now = context.currentTime;
 
   const patterns = {
@@ -478,21 +629,41 @@ function playTone(type) {
   };
 
   const frequencies = patterns[type] || patterns.periodic;
-  frequencies.forEach((frequency, index) => {
-    const oscillator = context.createOscillator();
-    const gainNode = context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.value = frequency;
-    oscillator.connect(gainNode);
-    gainNode.connect(context.destination);
-    const offset = now + index * 0.17;
-    const volume = appState.volume * 0.2;
-    gainNode.gain.setValueAtTime(0, offset);
-    gainNode.gain.linearRampToValueAtTime(volume, offset + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, offset + 0.15);
-    oscillator.start(offset);
-    oscillator.stop(offset + 0.16);
-  });
+  const repeatCount = 2;
+  const singleDuration = frequencies.length * 0.17;
+  const repeatGap = 0.12;
+
+  for (let repeat = 0; repeat < repeatCount; repeat++) {
+    const repeatOffset = repeat * (singleDuration + repeatGap);
+    frequencies.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      const offset = now + repeatOffset + index * 0.17;
+      const volume = appState.volume * 0.2;
+      gainNode.gain.setValueAtTime(0, offset);
+      gainNode.gain.linearRampToValueAtTime(volume, offset + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, offset + 0.15);
+      oscillator.start(offset);
+      oscillator.stop(offset + 0.16);
+    });
+  }
+}
+
+/** Updates browser tab title with current timer and mode label. */
+function updateDocumentTitle() {
+  if (appState.isComplete) {
+    document.title = `Done • ${BASE_PAGE_TITLE}`;
+    return;
+  }
+
+  const currentSegment = getCurrentSegment();
+  const segmentLabel =
+    currentSegment && currentSegment.type === "break" ? "Break" : "Focus";
+  document.title = `${formatClock(appState.remainingSeconds)} • ${segmentLabel}`;
 }
 
 /** Sets mode label and session status text for current segment. */
@@ -532,8 +703,20 @@ function render() {
     RING_CIRCUMFERENCE * (1 - segmentProgress),
   );
 
-  startBtn.disabled = appState.isRunning || appState.isComplete;
-  pauseBtn.disabled = !appState.isRunning;
+  updateDocumentTitle();
+
+  if (appState.isComplete) {
+    startPauseBtn.textContent = "Start";
+    startPauseBtn.disabled = true;
+  } else if (appState.isRunning) {
+    startPauseBtn.textContent = "Pause";
+    startPauseBtn.disabled = false;
+  } else {
+    startPauseBtn.textContent = "Start";
+    startPauseBtn.disabled = false;
+  }
+  startPauseBtn.setAttribute("aria-label", startPauseBtn.textContent);
+  startPauseBtn.setAttribute("title", startPauseBtn.textContent);
   skipBtn.disabled = appState.isComplete;
 }
 
@@ -551,6 +734,8 @@ function advanceSegment(triggeredBySkip = false) {
   const currentSegment = getCurrentSegment();
   if (currentSegment && currentSegment.type === "focus" && !triggeredBySkip) {
     appState.completedFocusSeconds += currentSegment.minutes * 60;
+  }
+  if (currentSegment && !triggeredBySkip) {
     playTone("session");
   }
 
@@ -604,6 +789,7 @@ function handleTick() {
 
 /** Starts timer countdown from current state. */
 function handleStart() {
+  void resumeNotificationContextIfNeeded();
   if (appState.isRunning || appState.isComplete) {
     return;
   }
@@ -615,12 +801,14 @@ function handleStart() {
 
 /** Pauses countdown and ambient playback while preserving progress. */
 function handlePause() {
+  void resumeNotificationContextIfNeeded();
   stopTimer();
   render();
 }
 
 /** Resets current route timer to first segment without changing cities. */
 function handleReset() {
+  void resumeNotificationContextIfNeeded();
   stopTimer();
   appState.currentSegmentIndex = 0;
   appState.completedFocusSeconds = 0;
@@ -633,6 +821,7 @@ function handleReset() {
 
 /** Skips current segment and jumps to the next phase immediately. */
 function handleSkip() {
+  void resumeNotificationContextIfNeeded();
   if (appState.isComplete) {
     return;
   }
@@ -641,6 +830,7 @@ function handleSkip() {
 
 /** Builds a random city route and initializes related timer state. */
 function generateRoute() {
+  void resumeNotificationContextIfNeeded();
   stopTimer();
   appState.completedFocusSeconds = 0;
   appState.isComplete = false;
@@ -736,6 +926,7 @@ function handleVolumeChange(event) {
 
 /** Toggles background music playback on and off. */
 async function handleMuteToggle() {
+  await resumeNotificationContextIfNeeded();
   appState.isMusicEnabled = !appState.isMusicEnabled;
   updateMuteButton();
   savePreferences();
@@ -756,14 +947,23 @@ function handleThemeToggle() {
 
 /** Binds all UI event listeners once during app startup. */
 function bindEvents() {
-  startBtn.addEventListener("click", handleStart);
-  pauseBtn.addEventListener("click", handlePause);
+  startPauseBtn.addEventListener("click", () => {
+    if (appState.isRunning) {
+      handlePause();
+    } else {
+      handleStart();
+    }
+  });
   resetBtn.addEventListener("click", handleReset);
   skipBtn.addEventListener("click", handleSkip);
   newCitiesBtn.addEventListener("click", generateRoute);
   volumeRange.addEventListener("input", handleVolumeChange);
   muteToggleBtn.addEventListener("click", handleMuteToggle);
+  fullscreenToggleBtn.addEventListener("click", handleFullscreenToggle);
   themeToggleBtn.addEventListener("click", handleThemeToggle);
+
+  document.addEventListener("fullscreenchange", syncFullscreenUI);
+  document.addEventListener("webkitfullscreenchange", syncFullscreenUI);
 }
 
 /** Initializes UI controls from state before first render. */
@@ -772,6 +972,7 @@ function hydrateControls() {
   updateMuteButton();
   ringProgress.style.strokeDasharray = String(RING_CIRCUMFERENCE);
   applyTheme();
+  syncFullscreenUI();
 }
 
 /** Initializes app settings, route data, and event bindings. */

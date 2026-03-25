@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="stylesheet" href="./style.css" />
 </head>
 
@@ -24,6 +25,10 @@
         <button id="newCitiesBtn" class="icon-btn" type="button" aria-label="Generate new cities"
           title="Generate new cities">
           ✈
+        </button>
+        <button id="fullscreenToggleBtn" class="icon-btn" type="button" aria-label="Enter fullscreen"
+          title="Enter fullscreen">
+          ⛶
         </button>
         <button id="themeToggleBtn" class="icon-btn" type="button" aria-label="Toggle theme" title="Toggle theme">
           <span id="themeToggleLabel">☀</span>
@@ -52,8 +57,7 @@
       </div>
 
       <div class="controls">
-        <button id="startBtn" class="primary-btn icon-btn" type="button" aria-label="Start" title="Start">▶</button>
-        <button id="pauseBtn" class="icon-btn" type="button" aria-label="Pause" title="Pause">❚❚</button>
+        <button id="startPauseBtn" class="primary-btn icon-btn start-pause-btn" type="button" aria-label="Start" title="Start">Start</button>
         <button id="resetBtn" class="icon-btn" type="button" aria-label="Reset" title="Reset">↺</button>
         <button id="skipBtn" class="icon-btn" type="button" aria-label="Skip current session"
           title="Skip current session">⏭</button>

@@ -72,6 +72,20 @@ body.theme-light .app-overlay {
   gap: 12px;
 }
 
+body.fullscreen-fallback .app {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 22px 12px 24px;
+}
+
+body.fullscreen-real .app {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 22px 12px 24px;
+}
+
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -90,6 +104,14 @@ body.theme-light .app-overlay {
 .top-icons {
   display: flex;
   gap: 8px;
+}
+
+#fullscreenToggleBtn {
+  position: fixed;
+  right: 36px;
+  bottom: 36px; /* avoid overlapping the fixed footer track */
+  z-index: 20;
+  border: none;
 }
 
 .center-stage {
@@ -221,6 +243,13 @@ input[type="range"] {
 
 .primary-btn {
   background: rgba(122, 174, 255, 0.34);
+}
+
+.start-pause-btn {
+  min-width: 80px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
 }
 
 .bottom-dock {
@@ -381,11 +410,26 @@ input[type="range"] {
 
 @media (max-width: 620px) {
   .sound-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+
+  .music-panel {
+    width: 72px;
+  }
+
+  .music-toggle {
+    min-width: 72px;
+    padding: 0 10px;
   }
 
   .bottom-dock {
     width: min(94vw, 420px);
+  }
+
+  #fullscreenToggleBtn {
+    right: 12px;
+    bottom: 78px;
   }
 }
 
