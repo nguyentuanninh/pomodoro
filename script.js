@@ -113,8 +113,6 @@ const flightTimeDisplay = document.getElementById("flightTimeDisplay");
 const sessionDisplay = document.getElementById("sessionDisplay");
 const timerDisplay = document.getElementById("timerDisplay");
 const modeDisplay = document.getElementById("modeDisplay");
-const totalProgressBar = document.getElementById("totalProgressBar");
-const progressPercent = document.getElementById("progressPercent");
 const ringProgress = document.getElementById("ringProgress");
 const appBackground = document.getElementById("appBackground");
 const volumeRange = document.getElementById("volumeRange");
@@ -410,21 +408,6 @@ function getCurrentSegment() {
   return appState.segments[appState.currentSegmentIndex] || null;
 }
 
-/** Calculates current focus progress percentage for the entire route. */
-function getOverallProgress() {
-  if (!appState.totalFocusSeconds) {
-    return 0;
-  }
-  const currentSegment = getCurrentSegment();
-  const currentFocusElapsed =
-    currentSegment && currentSegment.type === "focus"
-      ? currentSegment.minutes * 60 - appState.remainingSeconds
-      : 0;
-  const elapsedTotal =
-    appState.completedFocusSeconds + Math.max(0, currentFocusElapsed);
-  return Math.min(100, (elapsedTotal / appState.totalFocusSeconds) * 100);
-}
-
 /** Calculates current segment progress for the circular ring. */
 function getSegmentProgress() {
   const segment = getCurrentSegment();
@@ -693,10 +676,6 @@ function render() {
   timerDisplay.textContent = formatClock(appState.remainingSeconds);
 
   updateModeAndSessionLabels();
-
-  const overallPercent = getOverallProgress();
-  progressPercent.textContent = `${Math.round(overallPercent)}%`;
-  totalProgressBar.style.width = `${overallPercent}%`;
 
   const segmentProgress = getSegmentProgress();
   ringProgress.style.strokeDashoffset = String(

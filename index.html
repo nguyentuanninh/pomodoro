@@ -65,24 +65,13 @@
     </section>
 
     <section class="bottom-dock">
-      <div class="sound-strip">
-        <div class="music-panel">
-          <button id="muteToggleBtn" class="icon-btn music-toggle" type="button" aria-label="Turn music on"
-            title="Turn music on">
-            ♫ Off
-          </button>
-        </div>
-
-        <label class="icon-control" aria-label="Volume">
-          <span aria-hidden="true">◉</span>
-          <input id="volumeRange" type="range" min="0" max="100" value="60" />
-        </label>
-      </div>
-
-      <div class="progress-track">
-        <div id="totalProgressBar" class="progress-fill"></div>
-      </div>
-      <p id="progressPercent" class="progress-text">0%</p>
+      <button id="muteToggleBtn" class="dock-btn music-toggle" type="button" aria-label="Turn music on"
+        title="Turn music on">
+        🔇
+      </button>
+      <label class="volume-slider" aria-label="Volume">
+        <input id="volumeRange" type="range" min="0" max="100" value="60" />
+      </label>
     </section>
   </main>
   <div class="footer-dog-track" aria-hidden="true">
