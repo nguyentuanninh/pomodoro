@@ -35,7 +35,7 @@ const DEFAULT_MUSIC_TRACKS = [
   "./sounds/4.mp3",
   "./sounds/5.mp3",
 ];
-const UNSPLASH_ACCESS_KEY = "gg9iP35mMQOwm6tXK0TC-hBdJYD2wpfI8YBhmnrAwGg";
+const UNSPLASH_ACCESS_KEY = "7ImquDrocPO41eey4Z7iUKwJWRwYP60-cehhM_wjmYY";
 const UNSPLASH_CACHE_KEY = "city-flight-pomodoro-unsplash-cache";
 
 const STORAGE_KEYS = {
@@ -971,7 +971,7 @@ async function fetchCityImage(city) {
     }
     const data = await response.json();
     if (data.results && data.results.length > 0) {
-      const url = data.results[0].urls.regular;
+      const url = data.results[0].urls.full;
       setUnsplashCache(city, url);
       return url;
     }
