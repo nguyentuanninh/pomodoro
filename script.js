@@ -35,6 +35,9 @@ const DEFAULT_MUSIC_TRACKS = [
   "./sounds/4.mp3",
   "./sounds/5.mp3",
 ];
+const UNSPLASH_ACCESS_KEY = "gg9iP35mMQOwm6tXK0TC-hBdJYD2wpfI8YBhmnrAwGgNINH";
+const UNSPLASH_CACHE_KEY = "city-flight-pomodoro-unsplash-cache";
+
 const STORAGE_KEYS = {
   volume: "city-flight-pomodoro-volume",
   musicEnabled: "city-flight-pomodoro-music-enabled",
@@ -43,45 +46,83 @@ const STORAGE_KEYS = {
 };
 
 const CITIES = [
-  "Paris",
-  "London",
-  "Rome",
-  "Berlin",
-  "Madrid",
-  "Amsterdam",
-  "Vienna",
-  "Prague",
+  "Paris", "London", "Rome", "Berlin", "Madrid",
+  "Amsterdam", "Vienna", "Prague", "Barcelona", "Lisbon",
+  "Dublin", "Brussels", "Zurich", "Stockholm", "Copenhagen",
+  "Athens", "Budapest", "Warsaw", "Oslo", "Helsinki",
 ];
 
 const FLIGHT_DURATIONS = {
-  "Paris|London": 75,
-  "Paris|Rome": 120,
-  "Paris|Berlin": 105,
-  "Paris|Madrid": 125,
-  "Paris|Amsterdam": 70,
-  "Paris|Vienna": 115,
-  "Paris|Prague": 100,
-  "London|Rome": 145,
-  "London|Berlin": 110,
-  "London|Madrid": 140,
-  "London|Amsterdam": 65,
-  "London|Vienna": 130,
-  "London|Prague": 120,
-  "Rome|Berlin": 115,
-  "Rome|Madrid": 150,
-  "Rome|Amsterdam": 135,
-  "Rome|Vienna": 95,
-  "Rome|Prague": 105,
-  "Berlin|Madrid": 155,
-  "Berlin|Amsterdam": 80,
-  "Berlin|Vienna": 80,
-  "Berlin|Prague": 60,
-  "Madrid|Amsterdam": 150,
-  "Madrid|Vienna": 180,
-  "Madrid|Prague": 165,
-  "Amsterdam|Vienna": 110,
-  "Amsterdam|Prague": 90,
-  "Vienna|Prague": 55,
+  "Amsterdam|Athens": 195, "Amsterdam|Barcelona": 130, "Amsterdam|Berlin": 80,
+  "Amsterdam|Brussels": 45, "Amsterdam|Budapest": 130, "Amsterdam|Copenhagen": 95,
+  "Amsterdam|Dublin": 100, "Amsterdam|Helsinki": 165, "Amsterdam|Lisbon": 175,
+  "Amsterdam|London": 65, "Amsterdam|Madrid": 150, "Amsterdam|Oslo": 110,
+  "Amsterdam|Paris": 70, "Amsterdam|Prague": 90, "Amsterdam|Rome": 135,
+  "Amsterdam|Stockholm": 120, "Amsterdam|Vienna": 110, "Amsterdam|Warsaw": 115,
+  "Amsterdam|Zurich": 85,
+  "Athens|Barcelona": 185, "Athens|Berlin": 170, "Athens|Brussels": 190,
+  "Athens|Budapest": 120, "Athens|Copenhagen": 195, "Athens|Dublin": 235,
+  "Athens|Helsinki": 195, "Athens|Lisbon": 240, "Athens|London": 215,
+  "Athens|Madrid": 225, "Athens|Oslo": 210, "Athens|Paris": 200,
+  "Athens|Prague": 155, "Athens|Rome": 130, "Athens|Stockholm": 195,
+  "Athens|Vienna": 140, "Athens|Warsaw": 155, "Athens|Zurich": 165,
+  "Barcelona|Berlin": 150, "Barcelona|Brussels": 115, "Barcelona|Budapest": 160,
+  "Barcelona|Copenhagen": 170, "Barcelona|Dublin": 140, "Barcelona|Helsinki": 210,
+  "Barcelona|Lisbon": 100, "Barcelona|London": 120, "Barcelona|Madrid": 70,
+  "Barcelona|Oslo": 185, "Barcelona|Paris": 105, "Barcelona|Prague": 140,
+  "Barcelona|Rome": 110, "Barcelona|Stockholm": 185, "Barcelona|Vienna": 145,
+  "Barcelona|Warsaw": 170, "Barcelona|Zurich": 100,
+  "Berlin|Brussels": 85, "Berlin|Budapest": 90, "Berlin|Copenhagen": 65,
+  "Berlin|Dublin": 120, "Berlin|Helsinki": 130, "Berlin|Lisbon": 190,
+  "Berlin|London": 110, "Berlin|Madrid": 155, "Berlin|Oslo": 105,
+  "Berlin|Paris": 105, "Berlin|Prague": 60, "Berlin|Rome": 115,
+  "Berlin|Stockholm": 95, "Berlin|Vienna": 80, "Berlin|Warsaw": 75,
+  "Berlin|Zurich": 85,
+  "Brussels|Budapest": 120, "Brussels|Copenhagen": 100, "Brussels|Dublin": 85,
+  "Brussels|Helsinki": 165, "Brussels|Lisbon": 155, "Brussels|London": 55,
+  "Brussels|Madrid": 135, "Brussels|Oslo": 120, "Brussels|Paris": 50,
+  "Brussels|Prague": 90, "Brussels|Rome": 115, "Brussels|Stockholm": 130,
+  "Brussels|Vienna": 100, "Brussels|Warsaw": 120, "Brussels|Zurich": 70,
+  "Budapest|Copenhagen": 130, "Budapest|Dublin": 170, "Budapest|Helsinki": 155,
+  "Budapest|Lisbon": 205, "Budapest|London": 150, "Budapest|Madrid": 180,
+  "Budapest|Oslo": 150, "Budapest|Paris": 140, "Budapest|Prague": 55,
+  "Budapest|Rome": 100, "Budapest|Stockholm": 140, "Budapest|Vienna": 45,
+  "Budapest|Warsaw": 70, "Budapest|Zurich": 100,
+  "Copenhagen|Dublin": 130, "Copenhagen|Helsinki": 95, "Copenhagen|Lisbon": 200,
+  "Copenhagen|London": 110, "Copenhagen|Madrid": 175, "Copenhagen|Oslo": 60,
+  "Copenhagen|Paris": 120, "Copenhagen|Prague": 85, "Copenhagen|Rome": 150,
+  "Copenhagen|Stockholm": 65, "Copenhagen|Vienna": 110, "Copenhagen|Warsaw": 85,
+  "Copenhagen|Zurich": 110,
+  "Dublin|Helsinki": 190, "Dublin|Lisbon": 155, "Dublin|London": 75,
+  "Dublin|Madrid": 140, "Dublin|Oslo": 130, "Dublin|Paris": 95,
+  "Dublin|Prague": 135, "Dublin|Rome": 165, "Dublin|Stockholm": 145,
+  "Dublin|Vienna": 150, "Dublin|Warsaw": 155, "Dublin|Zurich": 115,
+  "Helsinki|Lisbon": 255, "Helsinki|London": 175, "Helsinki|Madrid": 225,
+  "Helsinki|Oslo": 100, "Helsinki|Paris": 175, "Helsinki|Prague": 130,
+  "Helsinki|Rome": 185, "Helsinki|Stockholm": 60, "Helsinki|Vienna": 145,
+  "Helsinki|Warsaw": 105, "Helsinki|Zurich": 155,
+  "Lisbon|London": 145, "Lisbon|Madrid": 65, "Lisbon|Oslo": 210,
+  "Lisbon|Paris": 145, "Lisbon|Prague": 185, "Lisbon|Rome": 170,
+  "Lisbon|Stockholm": 220, "Lisbon|Vienna": 190, "Lisbon|Warsaw": 210,
+  "Lisbon|Zurich": 155,
+  "London|Madrid": 140, "London|Oslo": 130, "London|Paris": 75,
+  "London|Prague": 120, "London|Rome": 145, "London|Stockholm": 145,
+  "London|Vienna": 130, "London|Warsaw": 140, "London|Zurich": 100,
+  "Madrid|Oslo": 195, "Madrid|Paris": 125, "Madrid|Prague": 165,
+  "Madrid|Rome": 150, "Madrid|Stockholm": 200, "Madrid|Vienna": 180,
+  "Madrid|Warsaw": 190, "Madrid|Zurich": 130,
+  "Oslo|Paris": 135, "Oslo|Prague": 120, "Oslo|Rome": 170,
+  "Oslo|Stockholm": 55, "Oslo|Vienna": 135, "Oslo|Warsaw": 110,
+  "Oslo|Zurich": 130,
+  "Paris|Prague": 100, "Paris|Rome": 120, "Paris|Stockholm": 150,
+  "Paris|Vienna": 115, "Paris|Warsaw": 130, "Paris|Zurich": 75,
+  "Prague|Rome": 105, "Prague|Stockholm": 115, "Prague|Vienna": 55,
+  "Prague|Warsaw": 65, "Prague|Zurich": 80,
+  "Rome|Stockholm": 170, "Rome|Vienna": 95, "Rome|Warsaw": 135,
+  "Rome|Zurich": 95,
+  "Stockholm|Vienna": 140, "Stockholm|Warsaw": 105, "Stockholm|Zurich": 140,
+  "Vienna|Warsaw": 75, "Vienna|Zurich": 85,
+  "Warsaw|Zurich": 110,
 };
 
 const appState = {
@@ -125,6 +166,8 @@ const startPauseBtn = document.getElementById("startPauseBtn");
 const resetBtn = document.getElementById("resetBtn");
 const skipBtn = document.getElementById("skipBtn");
 const newCitiesBtn = document.getElementById("newCitiesBtn");
+const departureSelect = document.getElementById("departureSelect");
+const destinationSelect = document.getElementById("destinationSelect");
 
 const ambientAudio = new Audio();
 ambientAudio.preload = "auto";
@@ -623,7 +666,7 @@ function playTone(type) {
       oscillator.connect(gainNode);
       gainNode.connect(context.destination);
       const offset = now + repeatOffset + index * 0.17;
-      const volume = appState.volume * 0.2;
+      const volume = appState.volume * 0.8;
       gainNode.gain.setValueAtTime(0, offset);
       gainNode.gain.linearRampToValueAtTime(volume, offset + 0.02);
       gainNode.gain.exponentialRampToValueAtTime(0.001, offset + 0.15);
@@ -804,22 +847,36 @@ function handleSkip() {
   advanceSegment(true);
 }
 
-/** Builds a random city route and initializes related timer state. */
-function generateRoute() {
+/** Populates city select dropdowns with sorted city list. */
+function populateCitySelectors() {
+  const sorted = [...CITIES].sort();
+  [departureSelect, destinationSelect].forEach(select => {
+    select.innerHTML = "";
+    sorted.forEach(city => {
+      const option = document.createElement("option");
+      option.value = city;
+      option.textContent = city;
+      select.appendChild(option);
+    });
+  });
+}
+
+/** Syncs select dropdowns to match current app state cities. */
+function syncCitySelectors() {
+  departureSelect.value = appState.departure;
+  destinationSelect.value = appState.destination;
+}
+
+/** Sets up a route from the currently selected cities and resets the timer. */
+function applyRoute(departure, destination) {
   void resumeNotificationContextIfNeeded();
   stopTimer();
   appState.completedFocusSeconds = 0;
   appState.isComplete = false;
   appState.currentFocusTenMinuteMark = TEN_MINUTES_SECONDS;
 
-  const departureIndex = Math.floor(Math.random() * CITIES.length);
-  let destinationIndex = Math.floor(Math.random() * CITIES.length);
-  while (destinationIndex === departureIndex) {
-    destinationIndex = Math.floor(Math.random() * CITIES.length);
-  }
-
-  appState.departure = CITIES[departureIndex];
-  appState.destination = CITIES[destinationIndex];
+  appState.departure = departure;
+  appState.destination = destination;
 
   const durationKey = getDurationKey(appState.departure, appState.destination);
   appState.totalFlightMinutes = FLIGHT_DURATIONS[durationKey] || 90;
@@ -833,50 +890,145 @@ function generateRoute() {
     ? appState.segments[0].minutes * 60
     : 0;
 
+  syncCitySelectors();
   updateBackground();
   render();
 }
 
-/** Converts city names to lowercase slugs for file paths. */
-function slugifyCity(city) {
-  return city.toLowerCase().replace(/\s+/g, "-");
+/** Builds a random city route and initializes related timer state. */
+function generateRoute() {
+  const departureIndex = Math.floor(Math.random() * CITIES.length);
+  let destinationIndex = Math.floor(Math.random() * CITIES.length);
+  while (destinationIndex === departureIndex) {
+    destinationIndex = Math.floor(Math.random() * CITIES.length);
+  }
+  applyRoute(CITIES[departureIndex], CITIES[destinationIndex]);
 }
 
-/** Applies gradient fallback background when city images are missing. */
-function applyFallbackBackground() {
-  const gradients = [
-    "linear-gradient(120deg, #101726, #1d2f50, #0f203f)",
-    "linear-gradient(120deg, #221738, #213d63, #0b2955)",
-    "linear-gradient(120deg, #1b1322, #29476a, #123b5c)",
-  ];
-  const seed = (appState.departure + appState.destination)
-    .split("")
-    .reduce((sum, character) => sum + character.charCodeAt(0), 0);
-  appBackground.style.backgroundImage = gradients[seed % gradients.length];
+/** Handles departure city selector change. */
+function handleDepartureChange() {
+  let dest = destinationSelect.value;
+  if (dest === departureSelect.value) {
+    const other = CITIES.find(c => c !== departureSelect.value);
+    dest = other || CITIES[0];
+  }
+  applyRoute(departureSelect.value, dest);
+}
+
+/** Handles destination city selector change. */
+function handleDestinationChange() {
+  let dep = departureSelect.value;
+  if (dep === destinationSelect.value) {
+    const other = CITIES.find(c => c !== destinationSelect.value);
+    dep = other || CITIES[0];
+  }
+  applyRoute(dep, destinationSelect.value);
+}
+
+/** Returns the Unsplash image cache from localStorage. */
+function getUnsplashCache() {
+  try {
+    return JSON.parse(localStorage.getItem(UNSPLASH_CACHE_KEY)) || {};
+  } catch (_error) {
+    return {};
+  }
+}
+
+/** Saves an image URL to the Unsplash cache for a city. */
+function setUnsplashCache(city, url) {
+  const cache = getUnsplashCache();
+  cache[city] = url;
+  try {
+    localStorage.setItem(UNSPLASH_CACHE_KEY, JSON.stringify(cache));
+  } catch (_error) {
+    // localStorage full — silently skip caching.
+  }
+}
+
+/** Fetches a city photo URL from Unsplash, using cache when available. */
+async function fetchCityImage(city) {
+  const cache = getUnsplashCache();
+  if (cache[city]) {
+    return cache[city];
+  }
+
+  try {
+    const query = encodeURIComponent(`${city} city skyline`);
+    const response = await fetch(
+      `https://api.unsplash.com/search/photos?query=${query}&per_page=1&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` } },
+    );
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      const url = data.results[0].urls.regular;
+      setUnsplashCache(city, url);
+      return url;
+    }
+  } catch (_error) {
+    // Network error — fall back to gradient.
+  }
+  return null;
+}
+
+const LOCAL_IMAGES = [
+  "./images/amsterdam.jpg",
+  "./images/berlin.jpg",
+  "./images/london.jpg",
+  "./images/madrid.jpg",
+  "./images/paris.jpg",
+  "./images/prague.jpg",
+  "./images/rome.jpg",
+  "./images/vienna.jpg",
+];
+
+/** Applies a random local image as the background fallback. */
+function applyLocalImageFallback() {
+  const randomIndex = Math.floor(Math.random() * LOCAL_IMAGES.length);
+  const path = LOCAL_IMAGES[randomIndex];
+  const image = new Image();
+  image.onload = () => {
+    appBackground.style.backgroundImage = `url("${path}")`;
+    appBackground.classList.add("image-loaded");
+  };
+  image.onerror = () => {
+    // If local image also fails, apply a gradient.
+    const gradients = [
+      "linear-gradient(120deg, #101726, #1d2f50, #0f203f)",
+      "linear-gradient(120deg, #221738, #213d63, #0b2955)",
+      "linear-gradient(120deg, #1b1322, #29476a, #123b5c)",
+    ];
+    const seed = (appState.departure + appState.destination)
+      .split("")
+      .reduce((sum, character) => sum + character.charCodeAt(0), 0);
+    appBackground.style.backgroundImage = gradients[seed % gradients.length];
+    appBackground.classList.remove("image-loaded");
+  };
+  image.src = path;
+}
+
+/** Loads route background from Unsplash, falls back to random local image. */
+async function updateBackground() {
   appBackground.classList.remove("image-loaded");
-}
 
-/** Loads route background image and falls back if assets are unavailable. */
-function updateBackground() {
-  const cityCandidates = [appState.departure, appState.destination].map(
-    city => `./images/${slugifyCity(city)}.jpg`,
-  );
-  const tryLoad = index => {
-    if (index >= cityCandidates.length) {
-      applyFallbackBackground();
+  const cities = [appState.destination, appState.departure];
+  for (const city of cities) {
+    const url = await fetchCityImage(city);
+    if (url) {
+      const image = new Image();
+      image.onload = () => {
+        appBackground.style.backgroundImage = `url("${url}")`;
+        appBackground.classList.add("image-loaded");
+      };
+      image.src = url;
       return;
     }
+  }
 
-    const image = new Image();
-    image.onload = () => {
-      appBackground.style.backgroundImage = `url("${cityCandidates[index]}")`;
-      appBackground.classList.add("image-loaded");
-    };
-    image.onerror = () => tryLoad(index + 1);
-    image.src = cityCandidates[index];
-  };
-
-  tryLoad(0);
+  // Unsplash failed for both cities — use a random local image.
+  applyLocalImageFallback();
 }
 
 /** Applies saved theme class to the document body. */
@@ -933,6 +1085,8 @@ function bindEvents() {
   resetBtn.addEventListener("click", handleReset);
   skipBtn.addEventListener("click", handleSkip);
   newCitiesBtn.addEventListener("click", generateRoute);
+  departureSelect.addEventListener("change", handleDepartureChange);
+  destinationSelect.addEventListener("change", handleDestinationChange);
   volumeRange.addEventListener("input", handleVolumeChange);
   muteToggleBtn.addEventListener("click", handleMuteToggle);
   fullscreenToggleBtn.addEventListener("click", handleFullscreenToggle);
@@ -955,6 +1109,7 @@ function hydrateControls() {
 function initApp() {
   loadPreferences();
   bindAudioEvents();
+  populateCitySelectors();
   hydrateControls();
   startSpriteAnimation();
   startFooterLottieAnimations();
