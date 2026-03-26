@@ -115,12 +115,25 @@ body.fullscreen-real .app {
 }
 
 .center-stage {
+  --float-x: 12px;
+  --float-y: 10px;
+  --float-scale-min: 0.97;
+  --float-scale-max: 1.03;
+  --float-duration-x: 6s;
+  --float-duration-y: 7s;
+  --float-duration-scale: 8s;
+
   align-self: center;
   text-align: center;
   display: grid;
   justify-items: center;
   gap: 12px;
-  animation: fade-up 320ms ease;
+  animation:
+    fade-up 320ms ease,
+    float-x var(--float-duration-x) ease-in-out infinite alternate,
+    float-y var(--float-duration-y) ease-in-out infinite alternate,
+    float-scale var(--float-duration-scale) ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .city-selectors {
@@ -501,6 +514,21 @@ body.theme-light input[type="range"]::-moz-range-thumb {
   #fullscreenToggleBtn {
     display: none;
   }
+}
+
+@keyframes float-x {
+  0%   { translate: calc(-1 * var(--float-x)) 0; }
+  100% { translate: var(--float-x) 0; }
+}
+
+@keyframes float-y {
+  0%   { translate: 0 calc(-1 * var(--float-y)); }
+  100% { translate: 0 var(--float-y); }
+}
+
+@keyframes float-scale {
+  0%   { scale: var(--float-scale-min); }
+  100% { scale: var(--float-scale-max); }
 }
 
 @keyframes fade-up {
