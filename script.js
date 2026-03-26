@@ -1,5 +1,5 @@
-const MAX_SESSION_MINUTES = 45;
-const SHORT_BREAK_MINUTES = 5;
+const MAX_SESSION_MINUTES = 0.1;
+const SHORT_BREAK_MINUTES = 0.1;
 const TEN_MINUTES_SECONDS = 600;
 const RING_CIRCUMFERENCE = 326.73;
 const TRACK_FADE_MS = 650;
@@ -308,7 +308,6 @@ function updateMuteButton() {
 /** Loads saved user preferences from localStorage. */
 function loadPreferences() {
   const savedVolume = localStorage.getItem(STORAGE_KEYS.volume);
-  const savedMusicEnabled = localStorage.getItem(STORAGE_KEYS.musicEnabled);
   const savedNotificationEnabled = localStorage.getItem(
     STORAGE_KEYS.notificationEnabled,
   );
@@ -318,9 +317,7 @@ function loadPreferences() {
     const parsedVolume = Number(savedVolume);
     appState.volume = Math.min(1, Math.max(0, parsedVolume));
   }
-  if (savedMusicEnabled) {
-    appState.isMusicEnabled = savedMusicEnabled === "true";
-  }
+  appState.isMusicEnabled = false;
   if (savedNotificationEnabled) {
     appState.isNotificationEnabled = savedNotificationEnabled === "true";
   }
