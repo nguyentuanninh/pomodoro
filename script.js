@@ -308,6 +308,12 @@ function startSpriteAnimation() {
   }, SPRITE_FRAME_INTERVAL_MS);
 }
 
+/** Stops the sprite animation loop. */
+function stopSpriteAnimation() {
+  clearInterval(spriteAnimationIntervalId);
+  spriteAnimationIntervalId = null;
+}
+
 /** Loads and starts all footer Lottie JSON animations. */
 function startFooterLottieAnimations() {
   if (!window.lottie) {
@@ -556,6 +562,7 @@ async function startMusicPlayback() {
   if (!appState.isMusicEnabled || !appState.musicTracks.length) {
     return;
   }
+  startSpriteAnimation();
   await playCurrentTrack(true);
 }
 
@@ -564,6 +571,7 @@ function stopMusicPlayback() {
   appState.isTrackTransitioning = false;
   appState.consecutiveTrackErrors = 0;
   stopFadeInterval();
+  stopSpriteAnimation();
   ambientAudio.pause();
   ambientAudio.currentTime = 0;
 }
@@ -1111,7 +1119,6 @@ function initApp() {
   bindAudioEvents();
   populateCitySelectors();
   hydrateControls();
-  startSpriteAnimation();
   startFooterLottieAnimations();
   bindEvents();
   generateRoute();
