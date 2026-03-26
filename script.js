@@ -35,7 +35,7 @@ const DEFAULT_MUSIC_TRACKS = [
   "./sounds/4.mp3",
   "./sounds/5.mp3",
 ];
-const UNSPLASH_ACCESS_KEY = "gg9iP35mMQOwm6tXK0TC-hBdJYD2wpfI8YBhmnrAwGgNINH";
+const UNSPLASH_ACCESS_KEY = "gg9iP35mMQOwm6tXK0TC-hBdJYD2wpfI8YBhmnrAwGg";
 const UNSPLASH_CACHE_KEY = "city-flight-pomodoro-unsplash-cache";
 
 const STORAGE_KEYS = {
