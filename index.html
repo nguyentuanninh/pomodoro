@@ -36,44 +36,68 @@
       </div>
     </header>
 
-    <section class="center-stage">
-      <div class="city-selectors">
-        <div class="city-select-group">
-          <label for="departureSelect" class="city-label">From</label>
-          <select id="departureSelect" class="city-select"></select>
+    <div class="dashboard">
+      <!-- Left: Quotes -->
+      <section class="panel panel-quote">
+        <div class="panel-header">
+          <h2 class="panel-title">Daily Quote</h2>
+          <button id="refreshQuoteBtn" class="icon-btn panel-refresh-btn" type="button" aria-label="New quote" title="New quote">↻</button>
         </div>
-        <span class="city-arrow">→</span>
-        <div class="city-select-group">
-          <label for="destinationSelect" class="city-label">To</label>
-          <select id="destinationSelect" class="city-select"></select>
+        <div id="quoteContent" class="quote-content">
+          <p id="quoteText" class="quote-text">Loading...</p>
+          <p id="quoteAuthor" class="quote-author"></p>
         </div>
-      </div>
-      <p id="routeDisplay" class="route-line">Paris → Rome</p>
-      <div class="meta-row">
-        <p id="flightTimeDisplay" class="meta-pill">✈ 0m</p>
-        <p id="sessionDisplay" class="meta-pill">1/1</p>
-      </div>
+      </section>
 
-      <div class="timer-wrap">
-        <div class="timer-ring" role="img" aria-label="Current session progress">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
-            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
-            <circle id="ringProgress" class="ring-progress" cx="60" cy="60" r="52"></circle>
-          </svg>
-          <div class="timer-text">
-            <p id="modeDisplay" class="mode">⏱</p>
-            <p id="timerDisplay" class="timer-value">00:00</p>
+      <!-- Center: Timer -->
+      <section class="center-stage">
+        <div class="city-selectors">
+          <div class="city-select-group">
+            <label for="departureSelect" class="city-label">From</label>
+            <select id="departureSelect" class="city-select"></select>
+          </div>
+          <span class="city-arrow">→</span>
+          <div class="city-select-group">
+            <label for="destinationSelect" class="city-label">To</label>
+            <select id="destinationSelect" class="city-select"></select>
           </div>
         </div>
-      </div>
+        <p id="routeDisplay" class="route-line">Paris → Rome</p>
+        <div class="meta-row">
+          <p id="flightTimeDisplay" class="meta-pill">✈ 0m</p>
+          <p id="sessionDisplay" class="meta-pill">1/1</p>
+        </div>
 
-      <div class="controls">
-        <button id="startPauseBtn" class="primary-btn icon-btn start-pause-btn" type="button" aria-label="Start" title="Start">Start</button>
-        <button id="resetBtn" class="icon-btn" type="button" aria-label="Reset" title="Reset">↺</button>
-        <button id="skipBtn" class="icon-btn" type="button" aria-label="Skip current session"
-          title="Skip current session">⏭</button>
-      </div>
-    </section>
+        <div class="timer-wrap">
+          <div class="timer-ring" role="img" aria-label="Current session progress">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+              <circle id="ringProgress" class="ring-progress" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <div class="timer-text">
+              <p id="modeDisplay" class="mode">⏱</p>
+              <p id="timerDisplay" class="timer-value">00:00</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="startPauseBtn" class="primary-btn icon-btn start-pause-btn" type="button" aria-label="Start" title="Start">Start</button>
+          <button id="resetBtn" class="icon-btn" type="button" aria-label="Reset" title="Reset">↺</button>
+          <button id="skipBtn" class="icon-btn" type="button" aria-label="Skip current session"
+            title="Skip current session">⏭</button>
+        </div>
+      </section>
+
+      <!-- Right: Weekly Heatmap -->
+      <section class="panel panel-heatmap">
+        <div class="panel-header">
+          <h2 class="panel-title">This Week</h2>
+        </div>
+        <div id="heatmapGrid" class="heatmap-grid"></div>
+        <p id="heatmapTotal" class="heatmap-total">0h 0m total</p>
+      </section>
+    </div>
 
     <section class="bottom-dock">
       <button id="muteToggleBtn" class="dock-btn music-toggle" type="button" aria-label="Turn music on"

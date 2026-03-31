@@ -754,6 +754,7 @@ function stopTimer() {
     appState.tickerId = null;
   }
   appState.isRunning = false;
+  stopHeatmapTracking();
 }
 
 /** Moves to the next available segment or completes the route. */
@@ -823,6 +824,7 @@ function handleStart() {
   appState.isRunning = true;
   appState.lastTickAt = Date.now();
   appState.tickerId = setInterval(handleTick, 1000);
+  startHeatmapTracking();
   render();
 }
 
@@ -1113,6 +1115,142 @@ function hydrateControls() {
   syncFullscreenUI();
 }
 
+// ─── Quote Section ───────────────────────────────────────────────
+
+const quoteText = document.getElementById("quoteText");
+const quoteAuthor = document.getElementById("quoteAuthor");
+const quoteContentEl = document.getElementById("quoteContent");
+const refreshQuoteBtn = document.getElementById("refreshQuoteBtn");
+
+async function fetchRandomQuote() {
+  quoteContentEl.classList.add("loading");
+  try {
+    const response = await fetch("https://dummyjson.com/quotes/random");
+    if (!response.ok) throw new Error("Failed to fetch");
+    const data = await response.json();
+    quoteText.textContent = `"${data.quote}"`;
+    quoteAuthor.textContent = `— ${data.author}`;
+  } catch (_error) {
+    quoteText.textContent = "Could not load quote.";
+    quoteAuthor.textContent = "";
+  } finally {
+    quoteContentEl.classList.remove("loading");
+  }
+}
+
+refreshQuoteBtn.addEventListener("click", fetchRandomQuote);
+
+// ─── Weekly Heatmap Section ──────────────────────────────────────
+
+const HEATMAP_STORAGE_KEY = "city-flight-pomodoro-heatmap";
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+let heatmapTrackingIntervalId = null;
+
+function getWeekKey() {
+  const now = new Date();
+  const dayOfWeek = (now.getDay() + 6) % 7;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - dayOfWeek);
+  return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
+}
+
+function getHeatmapData() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(HEATMAP_STORAGE_KEY));
+    if (stored && stored.weekKey === getWeekKey()) return stored;
+  } catch (_e) { /* ignore */ }
+  return { weekKey: getWeekKey(), days: [0, 0, 0, 0, 0, 0, 0] };
+}
+
+function saveHeatmapData(data) {
+  try { localStorage.setItem(HEATMAP_STORAGE_KEY, JSON.stringify(data)); }
+  catch (_e) { /* ignore */ }
+}
+
+function addFocusTimeToHeatmap(seconds) {
+  if (seconds <= 0) return;
+  const data = getHeatmapData();
+  const dayIndex = (new Date().getDay() + 6) % 7;
+  data.days[dayIndex] += seconds;
+  saveHeatmapData(data);
+  renderHeatmap();
+}
+
+function getHeatmapLevel(minutes) {
+  if (minutes <= 0) return 0;
+  if (minutes < 30) return 1;
+  if (minutes < 60) return 2;
+  if (minutes < 120) return 3;
+  return 4;
+}
+
+function formatHeatmapTime(seconds) {
+  const totalMinutes = Math.floor(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
+  return `${minutes}m`;
+}
+
+function renderHeatmap() {
+  const grid = document.getElementById("heatmapGrid");
+  const totalEl = document.getElementById("heatmapTotal");
+  const data = getHeatmapData();
+  const todayIndex = (new Date().getDay() + 6) % 7;
+
+  grid.innerHTML = "";
+  let totalSeconds = 0;
+
+  data.days.forEach((seconds, index) => {
+    totalSeconds += seconds;
+    const minutes = Math.floor(seconds / 60);
+    const level = getHeatmapLevel(minutes);
+
+    const day = document.createElement("div");
+    day.className = "heatmap-day";
+
+    const label = document.createElement("span");
+    label.className = "heatmap-label";
+    label.textContent = DAY_LABELS[index];
+
+    const block = document.createElement("div");
+    block.className = `heatmap-block${level > 0 ? ` level-${level}` : ""}${index === todayIndex ? " today" : ""}`;
+    block.title = `${DAY_LABELS[index]}: ${formatHeatmapTime(seconds)}`;
+
+    const time = document.createElement("span");
+    time.className = "heatmap-time";
+    time.textContent = seconds > 0 ? formatHeatmapTime(seconds) : "-";
+
+    day.appendChild(label);
+    day.appendChild(block);
+    day.appendChild(time);
+    grid.appendChild(day);
+  });
+
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const totalH = Math.floor(totalMinutes / 60);
+  const totalM = totalMinutes % 60;
+  totalEl.textContent = `${totalH}h ${totalM}m total`;
+}
+
+function startHeatmapTracking() {
+  stopHeatmapTracking();
+  heatmapTrackingIntervalId = setInterval(() => {
+    const currentSegment = getCurrentSegment();
+    if (appState.isRunning && currentSegment && currentSegment.type === "focus") {
+      addFocusTimeToHeatmap(60);
+    }
+  }, 60000);
+}
+
+function stopHeatmapTracking() {
+  if (heatmapTrackingIntervalId) {
+    clearInterval(heatmapTrackingIntervalId);
+    heatmapTrackingIntervalId = null;
+  }
+}
+
+
 /** Initializes app settings, route data, and event bindings. */
 function initApp() {
   loadPreferences();
@@ -1125,6 +1263,8 @@ function initApp() {
   if (appState.isMusicEnabled) {
     startMusicPlayback();
   }
+  fetchRandomQuote();
+  renderHeatmap();
 }
 
 initApp();
