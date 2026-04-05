@@ -674,6 +674,8 @@ body.theme-light input[type="range"]::-moz-range-thumb {
   border-color: rgba(30, 46, 90, 0.2);
 }
 
+/* ─── Tablet ─────────────────────────────────────────────────── */
+
 @media (max-width: 960px) {
   .dashboard {
     grid-template-columns: 1fr;
@@ -691,13 +693,213 @@ body.theme-light input[type="range"]::-moz-range-thumb {
   }
 }
 
+/* ─── Mobile ─────────────────────────────────────────────────── */
+
 @media (max-width: 620px) {
-  .volume-slider {
-    width: 90px;
+  /* Disable floating animations — saves battery, avoids jank */
+  .panel,
+  .center-stage {
+    animation: fade-up 320ms ease;
+  }
+
+  /* App layout: tighter spacing, room for fixed bottom dock */
+  .app {
+    padding: 12px 12px 80px;
+    gap: 8px;
+  }
+
+  /* Header: compact */
+  .top-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .brand {
+    font-size: 0.82rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .top-icons {
+    gap: 4px;
+  }
+
+  .top-icons .icon-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 0.9rem;
+  }
+
+  .auth-btn {
+    font-size: 0.72rem;
+    padding: 0 10px;
+    max-width: 110px;
   }
 
   #fullscreenToggleBtn {
     display: none;
+  }
+
+  /* Dashboard: no gap between timer and secondary panels */
+  .dashboard {
+    gap: 12px;
+  }
+
+  .panel {
+    max-width: none;
+    padding: 16px 14px;
+    border-radius: 14px;
+    min-height: unset;
+  }
+
+  /* Timer: hero section, take all the space */
+  .center-stage {
+    gap: 8px;
+  }
+
+  .city-selectors {
+    gap: 8px;
+  }
+
+  .city-select {
+    min-width: 110px;
+    padding: 6px 28px 6px 12px;
+    font-size: 0.88rem;
+  }
+
+  .city-arrow {
+    font-size: 1.2rem;
+    margin-top: 14px;
+  }
+
+  .route-line {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+  }
+
+  .meta-pill {
+    font-size: 0.82rem;
+    padding: 4px 10px;
+  }
+
+  .timer-ring {
+    width: min(68vw, 260px);
+  }
+
+  .timer-value {
+    font-size: clamp(2.6rem, 12vw, 3.6rem);
+  }
+
+  .controls {
+    gap: 8px;
+  }
+
+  .controls .icon-btn {
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .start-pause-btn {
+    min-width: 90px;
+    height: 48px;
+    font-size: 0.95rem;
+  }
+
+  /* Side panels: compact horizontal layout */
+  .panel-quote {
+    min-height: unset;
+  }
+
+  .panel-header {
+    margin-bottom: 10px;
+  }
+
+  .quote-text {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    padding-left: 12px;
+  }
+
+  .quote-author {
+    font-size: 0.78rem;
+  }
+
+  /* Heatmap: tighter grid */
+  .panel-heatmap {
+    min-height: unset;
+  }
+
+  .heatmap-grid {
+    gap: 5px;
+  }
+
+  .heatmap-block {
+    border-radius: 6px;
+  }
+
+  .heatmap-label {
+    font-size: 0.62rem;
+  }
+
+  .heatmap-time {
+    font-size: 0.58rem;
+  }
+
+  .heatmap-total {
+    margin-top: 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Bottom dock: fixed to bottom, full width, easy thumb access */
+  .bottom-dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    justify-self: stretch;
+    justify-content: center;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: 10px 16px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .volume-slider {
+    width: 100px;
+  }
+
+  /* Footer sprites: smaller on mobile */
+  .footer-dog-track {
+    height: 48px;
+    bottom: 56px;
+  }
+
+  .footer-json-sprite {
+    --sprite-size: 52px !important;
+  }
+
+  .music-sprite {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Auth modal: full-width on mobile */
+  .auth-modal {
+    width: min(360px, 94vw);
+    padding: 24px 20px 20px;
+    border-radius: 16px;
+  }
+
+  /* User dropdown */
+  .user-dropdown {
+    min-width: 160px;
   }
 }
 

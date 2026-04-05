@@ -35,7 +35,7 @@ const DEFAULT_MUSIC_TRACKS = [
   "./sounds/4.mp3",
   "./sounds/5.mp3",
 ];
-const UNSPLASH_ACCESS_KEY = "7ImquDrocPO41eey4Z7iUKwJWRwYP60-cehhM_wjmYYaaaaaaaaaa";
+const UNSPLASH_ACCESS_KEY = "7ImquDrocPO41eey4Z7iUKwJWRwYP60-cehhM_wjmYY";
 const UNSPLASH_CACHE_KEY = "city-flight-pomodoro-unsplash-cache";
 
 // ─── Supabase ────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ const themeToggleLabel = document.getElementById("themeToggleLabel");
 const startPauseBtn = document.getElementById("startPauseBtn");
 const resetBtn = document.getElementById("resetBtn");
 const skipBtn = document.getElementById("skipBtn");
-const newCitiesBtn = document.getElementById("newCitiesBtn");
+// const newCitiesBtn = document.getElementById("newCitiesBtn");
 const departureSelect = document.getElementById("departureSelect");
 const destinationSelect = document.getElementById("destinationSelect");
 const authBtn = document.getElementById("authBtn");
@@ -1210,7 +1210,7 @@ function bindEvents() {
   });
   resetBtn.addEventListener("click", handleReset);
   skipBtn.addEventListener("click", handleSkip);
-  newCitiesBtn.addEventListener("click", generateRoute);
+  // newCitiesBtn.addEventListener("click", generateRoute);
   departureSelect.addEventListener("change", handleDepartureChange);
   destinationSelect.addEventListener("change", handleDestinationChange);
   volumeRange.addEventListener("input", handleVolumeChange);
