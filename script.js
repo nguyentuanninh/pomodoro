@@ -35,8 +35,13 @@ const DEFAULT_MUSIC_TRACKS = [
   "./sounds/4.mp3",
   "./sounds/5.mp3",
 ];
-const UNSPLASH_ACCESS_KEY = "7ImquDrocPO41eey4Z7iUKwJWRwYP60-cehhM_wjmYY";
+const UNSPLASH_ACCESS_KEY = "7ImquDrocPO41eey4Z7iUKwJWRwYP60-cehhM_wjmYYaaaaaaaaaa";
 const UNSPLASH_CACHE_KEY = "city-flight-pomodoro-unsplash-cache";
+
+// ─── Supabase ────────────────────────────────────────────────────
+const SUPABASE_URL = "https://hjbytuouydbggvadvldn.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_6y7d6ygkMeB2h8bEJGQSsQ_Sk3Bnz0T";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const STORAGE_KEYS = {
   volume: "city-flight-pomodoro-volume",
@@ -147,6 +152,7 @@ const appState = {
   isNotificationEnabled: true,
   theme: "dark",
   currentFocusTenMinuteMark: TEN_MINUTES_SECONDS,
+  user: null,
 };
 
 const routeDisplay = document.getElementById("routeDisplay");
@@ -168,6 +174,21 @@ const skipBtn = document.getElementById("skipBtn");
 const newCitiesBtn = document.getElementById("newCitiesBtn");
 const departureSelect = document.getElementById("departureSelect");
 const destinationSelect = document.getElementById("destinationSelect");
+const authBtn = document.getElementById("authBtn");
+const userDropdown = document.getElementById("userDropdown");
+const dropdownEmail = document.getElementById("dropdownEmail");
+const logoutBtn = document.getElementById("logoutBtn");
+const authModal = document.getElementById("authModal");
+const authModalClose = document.getElementById("authModalClose");
+const authModalTitle = document.getElementById("authModalTitle");
+const authForm = document.getElementById("authForm");
+const authEmailInput = document.getElementById("authEmail");
+const authPasswordInput = document.getElementById("authPassword");
+const authError = document.getElementById("authError");
+const authSubmitBtn = document.getElementById("authSubmitBtn");
+const authSwitchText = document.getElementById("authSwitchText");
+const authSwitchBtn = document.getElementById("authSwitchBtn");
+let authMode = "signin";
 
 const ambientAudio = new Audio();
 ambientAudio.preload = "auto";
@@ -279,6 +300,106 @@ async function handleFullscreenToggle() {
     setFullscreenFallbackActive(true);
   }
   syncFullscreenUI();
+}
+
+// ─── Auth UI ─────────────────────────────────────────────────────
+
+function showAuthError(message) {
+  authError.textContent = message;
+  authError.hidden = false;
+}
+
+function hideAuthError() {
+  authError.hidden = true;
+}
+
+function openAuthModal() {
+  authMode = "signin";
+  syncAuthModalMode();
+  hideAuthError();
+  authForm.reset();
+  authModal.hidden = false;
+}
+
+function closeAuthModal() {
+  authModal.hidden = true;
+  hideAuthError();
+  authForm.reset();
+}
+
+function syncAuthModalMode() {
+  const isSignUp = authMode === "signup";
+  authModalTitle.textContent = isSignUp ? "Sign Up" : "Sign In";
+  authSubmitBtn.textContent = isSignUp ? "Sign Up" : "Sign In";
+  authSwitchText.textContent = isSignUp ? "Already have an account?" : "Don't have an account?";
+  authSwitchBtn.textContent = isSignUp ? "Sign In" : "Sign Up";
+}
+
+function toggleUserDropdown() {
+  const isOpen = !userDropdown.hidden;
+  userDropdown.hidden = isOpen;
+}
+
+function closeUserDropdown() {
+  userDropdown.hidden = true;
+}
+
+function updateAuthButton() {
+  if (appState.user) {
+    const displayName = appState.user.user_metadata?.display_name || appState.user.email;
+    authBtn.textContent = displayName;
+    authBtn.classList.add("logged-in");
+    authBtn.title = `Signed in as ${appState.user.email}`;
+    authBtn.onclick = toggleUserDropdown;
+    dropdownEmail.textContent = appState.user.email;
+  } else {
+    authBtn.textContent = "Sign in";
+    authBtn.classList.remove("logged-in");
+    authBtn.title = "Sign in";
+    authBtn.onclick = openAuthModal;
+    closeUserDropdown();
+  }
+}
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  hideAuthError();
+  authSubmitBtn.disabled = true;
+  authSubmitBtn.textContent = "Loading...";
+
+  const email = authEmailInput.value.trim();
+  const password = authPasswordInput.value;
+
+  try {
+    if (authMode === "signup") {
+      const { error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: email.split("@")[0] } },
+      });
+      if (error) throw error;
+      closeAuthModal();
+    } else {
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      closeAuthModal();
+    }
+  } catch (error) {
+    showAuthError(error.message || "Authentication failed");
+  } finally {
+    authSubmitBtn.disabled = false;
+    syncAuthModalMode();
+  }
+}
+
+async function handleSignOut() {
+  await supabaseClient.auth.signOut();
+}
+
+function handleAuthStateChange(_event, session) {
+  appState.user = session?.user || null;
+  updateAuthButton();
+  renderHeatmap();
 }
 
 /** Returns sprite frame path based on frame index. */
@@ -984,14 +1105,9 @@ async function fetchCityImage(city) {
 }
 
 const LOCAL_IMAGES = [
-  "./images/amsterdam.jpg",
-  "./images/berlin.jpg",
-  "./images/london.jpg",
   "./images/madrid.jpg",
   "./images/paris.jpg",
-  "./images/prague.jpg",
   "./images/rome.jpg",
-  "./images/vienna.jpg",
 ];
 
 /** Applies a random local image as the background fallback. */
@@ -1104,6 +1220,26 @@ function bindEvents() {
 
   document.addEventListener("fullscreenchange", syncFullscreenUI);
   document.addEventListener("webkitfullscreenchange", syncFullscreenUI);
+
+  // Auth events
+  authBtn.addEventListener("click", openAuthModal);
+  logoutBtn.addEventListener("click", () => {
+    closeUserDropdown();
+    handleSignOut();
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".user-dropdown-wrapper")) closeUserDropdown();
+  });
+  authModalClose.addEventListener("click", closeAuthModal);
+  authModal.addEventListener("click", (e) => {
+    if (e.target === authModal) closeAuthModal();
+  });
+  authForm.addEventListener("submit", handleAuthSubmit);
+  authSwitchBtn.addEventListener("click", () => {
+    authMode = authMode === "signin" ? "signup" : "signin";
+    syncAuthModalMode();
+    hideAuthError();
+  });
 }
 
 /** Initializes UI controls from state before first render. */
@@ -1140,9 +1276,8 @@ async function fetchRandomQuote() {
 
 refreshQuoteBtn.addEventListener("click", fetchRandomQuote);
 
-// ─── Weekly Heatmap Section ──────────────────────────────────────
+// ─── Weekly Heatmap Section (Supabase) ──────────────────────────
 
-const HEATMAP_STORAGE_KEY = "city-flight-pomodoro-heatmap";
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 let heatmapTrackingIntervalId = null;
 
@@ -1154,25 +1289,36 @@ function getWeekKey() {
   return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
 }
 
-function getHeatmapData() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(HEATMAP_STORAGE_KEY));
-    if (stored && stored.weekKey === getWeekKey()) return stored;
-  } catch (_e) { /* ignore */ }
-  return { weekKey: getWeekKey(), days: [0, 0, 0, 0, 0, 0, 0] };
+async function getHeatmapData() {
+  if (!appState.user) return { weekKey: getWeekKey(), days: [0, 0, 0, 0, 0, 0, 0] };
+  const weekKey = getWeekKey();
+  const { data, error } = await supabaseClient
+    .from("heatmap_data")
+    .select("days")
+    .eq("user_id", appState.user.id)
+    .eq("week_key", weekKey)
+    .maybeSingle();
+  if (error || !data) return { weekKey, days: [0, 0, 0, 0, 0, 0, 0] };
+  return { weekKey, days: data.days };
 }
 
-function saveHeatmapData(data) {
-  try { localStorage.setItem(HEATMAP_STORAGE_KEY, JSON.stringify(data)); }
-  catch (_e) { /* ignore */ }
+async function saveHeatmapData(days) {
+  if (!appState.user) return;
+  const weekKey = getWeekKey();
+  await supabaseClient
+    .from("heatmap_data")
+    .upsert(
+      { user_id: appState.user.id, week_key: weekKey, days },
+      { onConflict: "user_id,week_key" }
+    );
 }
 
-function addFocusTimeToHeatmap(seconds) {
-  if (seconds <= 0) return;
-  const data = getHeatmapData();
+async function addFocusTimeToHeatmap(seconds) {
+  if (seconds <= 0 || !appState.user) return;
+  const data = await getHeatmapData();
   const dayIndex = (new Date().getDay() + 6) % 7;
   data.days[dayIndex] += seconds;
-  saveHeatmapData(data);
+  await saveHeatmapData(data.days);
   renderHeatmap();
 }
 
@@ -1192,10 +1338,22 @@ function formatHeatmapTime(seconds) {
   return `${minutes}m`;
 }
 
-function renderHeatmap() {
+async function renderHeatmap() {
   const grid = document.getElementById("heatmapGrid");
   const totalEl = document.getElementById("heatmapTotal");
-  const data = getHeatmapData();
+
+  if (!appState.user) {
+    grid.innerHTML = "";
+    totalEl.textContent = "";
+    grid.innerHTML = `
+      <div class="heatmap-login-prompt" style="grid-column: 1 / -1;">
+        <p>Sign in to track your focus time</p>
+        <button class="icon-btn heatmap-login-btn" type="button" onclick="openAuthModal()">Sign in</button>
+      </div>`;
+    return;
+  }
+
+  const data = await getHeatmapData();
   const todayIndex = (new Date().getDay() + 6) % 7;
 
   grid.innerHTML = "";
@@ -1235,6 +1393,7 @@ function renderHeatmap() {
 
 function startHeatmapTracking() {
   stopHeatmapTracking();
+  if (!appState.user) return;
   heatmapTrackingIntervalId = setInterval(() => {
     const currentSegment = getCurrentSegment();
     if (appState.isRunning && currentSegment && currentSegment.type === "focus") {
@@ -1252,7 +1411,7 @@ function stopHeatmapTracking() {
 
 
 /** Initializes app settings, route data, and event bindings. */
-function initApp() {
+async function initApp() {
   loadPreferences();
   bindAudioEvents();
   populateCitySelectors();
@@ -1264,6 +1423,12 @@ function initApp() {
     startMusicPlayback();
   }
   fetchRandomQuote();
+
+  // Supabase auth setup
+  supabaseClient.auth.onAuthStateChange(handleAuthStateChange);
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  appState.user = session?.user || null;
+  updateAuthButton();
   renderHeatmap();
 }
 

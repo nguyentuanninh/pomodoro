@@ -22,6 +22,15 @@
     <header class="top-bar">
       <p class="brand">Lauren's Journey to Europe</p>
       <div class="top-icons">
+        <div class="user-dropdown-wrapper">
+          <button id="authBtn" class="icon-btn auth-btn" type="button" aria-label="Sign in" title="Sign in">
+            Sign in
+          </button>
+          <div id="userDropdown" class="user-dropdown" hidden>
+            <div class="user-dropdown-email" id="dropdownEmail"></div>
+            <button id="logoutBtn" class="user-dropdown-item" type="button">Sign out</button>
+          </div>
+        </div>
         <button id="newCitiesBtn" class="icon-btn" type="button" aria-label="Generate new cities"
           title="Generate new cities">
           ✈
@@ -41,7 +50,8 @@
       <section class="panel panel-quote">
         <div class="panel-header">
           <h2 class="panel-title">Daily Quote</h2>
-          <button id="refreshQuoteBtn" class="icon-btn panel-refresh-btn" type="button" aria-label="New quote" title="New quote">↻</button>
+          <button id="refreshQuoteBtn" class="icon-btn panel-refresh-btn" type="button" aria-label="New quote"
+            title="New quote">↻</button>
         </div>
         <div id="quoteContent" class="quote-content">
           <p id="quoteText" class="quote-text">Loading...</p>
@@ -82,7 +92,8 @@
         </div>
 
         <div class="controls">
-          <button id="startPauseBtn" class="primary-btn icon-btn start-pause-btn" type="button" aria-label="Start" title="Start">Start</button>
+          <button id="startPauseBtn" class="primary-btn icon-btn start-pause-btn" type="button" aria-label="Start"
+            title="Start">Start</button>
           <button id="resetBtn" class="icon-btn" type="button" aria-label="Reset" title="Reset">↺</button>
           <button id="skipBtn" class="icon-btn" type="button" aria-label="Skip current session"
             title="Skip current session">⏭</button>
@@ -108,6 +119,31 @@
         <input id="volumeRange" type="range" min="0" max="100" value="60" />
       </label>
     </section>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal-overlay" hidden>
+      <div class="auth-modal">
+        <button id="authModalClose" class="auth-modal-close" type="button" aria-label="Close">&times;</button>
+        <h2 id="authModalTitle" class="auth-modal-title">Sign In</h2>
+        <form id="authForm" class="auth-form">
+          <div class="auth-field">
+            <label for="authEmail">Email</label>
+            <input id="authEmail" type="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="auth-field">
+            <label for="authPassword">Password</label>
+            <input id="authPassword" type="password" placeholder="••••••••" required minlength="6"
+              autocomplete="current-password" />
+          </div>
+          <p id="authError" class="auth-error" hidden></p>
+          <button id="authSubmitBtn" class="primary-btn icon-btn auth-submit" type="submit">Sign In</button>
+        </form>
+        <p class="auth-switch" hidden>
+          <span id="authSwitchText">Don't have an account?</span>
+          <button id="authSwitchBtn" class="auth-switch-btn" type="button">Sign Up</button>
+        </p>
+      </div>
+    </div>
   </main>
   <div class="footer-dog-track" aria-hidden="true">
     <div id="footerAnimationDoggie" class="footer-json-sprite footer-json-sprite-1"></div>
@@ -120,6 +156,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="./script.js"></script>
 </body>
 
